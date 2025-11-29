@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # CLI version - connects to host's Ollama
+  prompt-generator-cli:
+    build: .
+    container_name: promptgen-cli
+    environment:
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    volumes:
+      - ./images:/app/images
+      - ./output:/app/output
+    stdin_open: true
+    tty: true
+    restart: "no"
+    network_mode: "bridge"
+
+  # Web UI - connects to host's Ollama
+  prompt-generator-web:
+    build: .
+    container_name: promptgen-web
+    ports:
+      - "8080:8080"
+    environment:
+      - OLLAMA_HOST=http://host.docker.internal:11434
+      - PORT=8080
+    volumes:
+      - ./images:/app/images
+      - ./output:/app/output
+      - ./web_ui.py:/app/web_ui.py
+      - ./prompt_generator.py:/app/prompt_generator.py
+    command: python web_ui.py
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+    driver: local
